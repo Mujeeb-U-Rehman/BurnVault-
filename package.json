@@ -1,0 +1,14 @@
+{
+    "name": "BurnVault",
+    "version": "1.0.0",
+    "description": "Secure ephemeral communication platform",
+    "author": "BurnVault Team",
+    "license": "MIT",
+    "keywords": [
+        "encryption",
+        "secure-communication",
+        "ephemeral",
+        "end-to-end",
+        "private"
+    ]
+}

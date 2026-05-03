@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BurnVault - Secure Communication Platform</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div id="app" class="app-container">
+        <!-- Authentication Section -->
+        <div id="auth-section" class="auth-section">
+            <div class="auth-container">
+                <div class="auth-box">
+                    <h1 class="logo">🔥 BurnVault</h1>
+                    <p class="tagline">Secure Communication That Disappears</p>
+
+                    <div id="login-form" class="form-section active">
+                        <h2>Login</h2>
+                        <input type="text" id="login-username" placeholder="Username" class="input-field">
+                        <input type="password" id="login-password" placeholder="Password" class="input-field">
+                        <button onclick="handleLogin()" class="btn btn-primary">Login</button>
+                        <p class="form-switch">Don't have an account? <a href="#" onclick="toggleAuthForms()">Register</a></p>
+                    </div>
+
+                    <div id="register-form" class="form-section">
+                        <h2>Register</h2>
+                        <input type="text" id="register-username" placeholder="Username" class="input-field">
+                        <input type="email" id="register-email" placeholder="Email" class="input-field">
+                        <input type="password" id="register-password" placeholder="Password" class="input-field">
+                        <input type="password" id="register-confirm" placeholder="Confirm Password" class="input-field">
+                        <button onclick="handleRegister()" class="btn btn-primary">Register</button>
+                        <p class="form-switch">Already have an account? <a href="#" onclick="toggleAuthForms()">Login</a></p>
+                    </div>
+
+                    <div id="loading-indicator" class="loading-indicator">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Application Section -->
+        <div id="app-section" class="app-section hidden">
+            <div class="app-layout">
+                <!-- Sidebar -->
+                <aside class="sidebar">
+                    <div class="sidebar-header">
+                        <h2>BurnVault</h2>
+                        <button onclick="handleLogout()" class="btn-icon" title="Logout - Sign out">🚪</button>
+                    </div>
+
+                    <div class="user-info">
+                        <div class="user-avatar">👤</div>
+                        <div class="user-details">
+                            <span id="current-username" class="username"></span>
+                            <span class="status online">● Online</span>
+                        </div>
+                    </div>
+
+                    <nav class="sidebar-nav">
+                        <button class="nav-item active" onclick="switchTab('messages', event)">
+                            💬 Messages
+                        </button>
+                        <button class="nav-item" onclick="switchTab('files', event)">
+                            📁 Files
+                        </button>
+                        <button class="nav-item" onclick="switchTab('contacts', event)">
+                            👥 Contacts
+                        </button>
+                    </nav>
+
+                    <div class="sidebar-footer">
+                        <button class="btn btn-primary full-width" onclick="switchTab('new-message')">
+                            ✏️ New Message
+                        </button>
+                    </div>
+                </aside>
+
+                <!-- Main Content -->
+                <main class="main-content">
+                    <!-- Messages Tab -->
+                    <div id="messages-tab" class="tab-content active">
+                        <div class="tab-header">
+                            <h1>Messages</h1>
+                            <input type="text" id="search-messages" placeholder="Search conversations..." class="search-box">
+                        </div>
+                        <div id="messages-list" class="messages-list">
+                            <div class="empty-state">
+                                <p>No messages yet</p>
+                                <small>Start a new conversation to send encrypted messages</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- New Message Tab -->
+                    <div id="new-message-tab" class="tab-content">
+                        <div class="tab-header">
+                            <h1>New Message</h1>
+                        </div>
+                        <div class="new-message-container">
+                            <div class="form-group">
+                                <label>Recipient</label>
+                                <input type="text" id="recipient-search" placeholder="Search by username..." class="input-field">
+                                <div id="search-results" class="search-results"></div>
+                            </div>
+
+                            <div id="recipient-info" class="recipient-info hidden">
+                                <div class="recipient-details">
+                                    <span id="recipient-name" class="recipient-name"></span>
+                                    <button onclick="clearRecipient()" class="btn-icon">✕</button>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Message</label>
+                                <textarea id="message-content" placeholder="Type your message..." class="textarea-field"></textarea>
+                            </div>
+
+                            <div class="file-upload-area">
+                                <input type="file" id="message-file" class="file-input">
+                                <label for="message-file" class="file-label">
+                                    📎 Attach File (Optional)
+                                </label>
+                                <div id="file-name-display" class="file-name-display"></div>
+                            </div>
+
+                            <button onclick="sendMessage()" class="btn btn-primary full-width">
+                                Send Encrypted Message
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Files Tab -->
+                    <div id="files-tab" class="tab-content">
+                        <div class="tab-header">
+                            <h1>Files</h1>
+                        </div>
+                        <div id="files-list" class="files-list">
+                            <div class="empty-state">
+                                <p>No files</p>
+                                <small>File transfers appear here</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contacts Tab -->
+                    <div id="contacts-tab" class="tab-content">
+                        <div class="tab-header">
+                            <h1>Contacts</h1>
+                            <button onclick="switchTab('new-message')" class="btn btn-primary">+ Add Contact</button>
+                        </div>
+                        <div id="contacts-list" class="contacts-list">
+                            <div class="empty-state">
+                                <p>No contacts yet</p>
+                                <small>Your contacts will appear here</small>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+            </div>
+        </div>
+
+        <!-- Notification Container -->
+        <div id="notification-container" class="notification-container"></div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/static/js/crypto-lib.js"></script>
+    <script src="/static/js/api-client.js"></script>
+    <script src="/static/js/websocket-client.js"></script>
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

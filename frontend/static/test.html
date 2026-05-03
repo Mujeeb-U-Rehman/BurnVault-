@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<body>
+<h1>Testing Decryption</h1>
+<script src="http://127.0.0.1:8000/static/js/crypto-lib.js"></script>
+<script>
+async function test() {
+    try {
+        const key = await cryptoLib.generateAESKey();
+        const blob = new Blob(["Hello File!"], {type: "text/plain"});
+        
+        console.log("Encrypting...");
+        const res = await cryptoLib.encryptFile(blob, key);
+        console.log("Encrypted Blob:", res.encryptedBlob);
+        
+        console.log("Decrypting...");
+        const buffer = await res.encryptedBlob.arrayBuffer();
+        const dec = await cryptoLib.decryptFile(buffer, res.iv, key);
+        console.log("Decrypted Blob:", dec);
+        
+        const text = await dec.text();
+        console.log("Text:", text);
+    } catch(e) {
+        console.error("FAILED:", e);
+    }
+}
+test();
+</script>
+</body>
+</html>
