@@ -1,0 +1,21 @@
+[MASTER]
+load-plugins=pylint_django
+ignore-paths=.*migrations.*,.*venv.*
+
+[pylint_django]
+django-settings-module=burnvault_project.settings
+
+[MESSAGES CONTROL]
+disable=
+    missing-docstring,
+    line-too-long,
+    broad-exception-caught,
+    unused-argument,
+    arguments-renamed,
+    invalid-name,
+    too-few-public-methods,
+    wrong-import-position,
+    attribute-defined-outside-init,
+    imported-auth-user,
+    unspecified-encoding,
+    abstract-method
