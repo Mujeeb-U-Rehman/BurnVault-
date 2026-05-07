@@ -19,6 +19,7 @@
                         <h2>Login</h2>
                         <input type="text" id="login-username" placeholder="Username" class="input-field">
                         <input type="password" id="login-password" placeholder="Password" class="input-field">
+                        <input type="text" id="login-2fa" placeholder="2FA Code (If enabled)" class="input-field">
                         <button onclick="handleLogin()" class="btn btn-primary">Login</button>
                         <p class="form-switch">Don't have an account? <a href="#" onclick="toggleAuthForms()">Register</a></p>
                     </div>
@@ -67,6 +68,9 @@
                         </button>
                         <button class="nav-item" onclick="switchTab('contacts', event)">
                             👥 Contacts
+                        </button>
+                        <button class="nav-item" onclick="switchTab('settings', event)">
+                            ⚙️ Settings
                         </button>
                     </nav>
 
@@ -154,6 +158,30 @@
                             <div class="empty-state">
                                 <p>No contacts yet</p>
                                 <small>Your contacts will appear here</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Settings Tab -->
+                    <div id="settings-tab" class="tab-content">
+                        <div class="tab-header">
+                            <h1>Settings</h1>
+                        </div>
+                        <div class="settings-container" style="padding: 20px;">
+                            <div class="card">
+                                <h3>Two-Factor Authentication (2FA)</h3>
+                                <p>Enhance the security of your account by enabling Two-Factor Authentication.</p>
+                                
+                                <div id="2fa-setup-section" class="hidden" style="margin-top: 15px;">
+                                    <p>Scan this QR code with your authenticator app (e.g., Google Authenticator, Authy):</p>
+                                    <img id="2fa-qr-code" src="" alt="QR Code" style="display: block; margin: 10px 0; max-width: 200px;">
+                                    <p>Or enter this secret manually: <code id="2fa-secret" style="background: #eee; padding: 2px 4px; border-radius: 4px;"></code></p>
+                                    <input type="text" id="2fa-verify-code" placeholder="Enter 6-digit code to verify" class="input-field" style="margin-top: 10px;">
+                                    <button onclick="verify2FA()" class="btn btn-primary" style="margin-top: 10px;">Verify & Enable 2FA</button>
+                                </div>
+                                <div id="2fa-status-section" style="margin-top: 15px;">
+                                    <button id="setup-2fa-btn" onclick="initiate2FASetup()" class="btn btn-secondary">Set Up 2FA</button>
+                                </div>
                             </div>
                         </div>
                     </div>

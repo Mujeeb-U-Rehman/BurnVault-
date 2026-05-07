@@ -180,13 +180,14 @@ class APIClient {
     /**
      * Login user
      */
-    async login(username, password) {
+    async login(username, password, totpCode = '') {
+        const body = { username, password };
+        if (totpCode) {
+            body.totp_code = totpCode;
+        }
         return this.request('/api/token/', {
             method: 'POST',
-            body: JSON.stringify({
-                username,
-                password
-            })
+            body: JSON.stringify(body)
         });
     }
 
@@ -330,6 +331,23 @@ class APIClient {
                 contact_user: contactUserId,
                 encrypted_shared_secret: encryptedSharedSecret
             })
+        });
+    }
+
+    /**
+     * Setup 2FA
+     */
+    async setup2FA() {
+        return this.request('/api/auth/setup-2fa/');
+    }
+
+    /**
+     * Verify 2FA
+     */
+    async verify2FA(code) {
+        return this.request('/api/auth/verify-2fa/', {
+            method: 'POST',
+            body: JSON.stringify({ code })
         });
     }
 }

@@ -11,6 +11,8 @@ class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     public_key = models.TextField()
     encrypted_private_key = models.TextField(blank=True, default='')
+    totp_secret = models.CharField(max_length=32, blank=True, default='')
+    is_2fa_enabled = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

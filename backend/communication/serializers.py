@@ -9,7 +9,7 @@ from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from .models import Contact, FileTransfer, Message, UserProfile
-
+import pyotp
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -134,6 +134,10 @@ class ContactSerializer(serializers.ModelSerializer):
 
 
 class BurnVaultTokenObtainPairSerializer(TokenObtainPairSerializer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['totp_code'] = serializers.CharField(required=False, allow_blank=True)
+
     @classmethod
     def get_token(cls, user):
         token = super().get_token(user)
@@ -142,6 +146,22 @@ class BurnVaultTokenObtainPairSerializer(TokenObtainPairSerializer):
 
     def validate(self, attrs):
         data = super().validate(attrs)
-        data['user_id'] = self.user.id
-        data['username'] = self.user.username
+        user = self.user
+        
+        try:
+            profile = user.profile
+        except UserProfile.DoesNotExist:
+            profile = None
+
+        if profile and profile.is_2fa_enabled:
+            totp_code = attrs.get('totp_code')
+            if not totp_code:
+                raise serializers.ValidationError({"totp_code": "2FA code is required."})
+            
+            totp = pyotp.TOTP(profile.totp_secret)
+            if not totp.verify(totp_code):
+                raise serializers.ValidationError({"totp_code": "Invalid 2FA code."})
+
+        data['user_id'] = user.id
+        data['username'] = user.username
         return data

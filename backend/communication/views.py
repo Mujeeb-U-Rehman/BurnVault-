@@ -1,6 +1,10 @@
 from __future__ import annotations
 
 import binascii
+import base64
+import pyotp
+import qrcode
+from io import BytesIO
 
 from django.contrib.auth.models import User
 from django.db.models import Q
@@ -201,3 +205,50 @@ class ContactListCreateView(generics.ListCreateAPIView):
 @permission_classes([permissions.AllowAny])
 def health(request):
     return Response({'status': 'ok'})
+
+class Setup2FAView(APIView):
+    def get(self, request):
+        profile, _ = UserProfile.objects.get_or_create(user=request.user, defaults={'public_key': ''})
+        
+        # Always generate a new secret for setup if they are requesting it
+        secret = pyotp.random_base32()
+        profile.totp_secret = secret
+        profile.is_2fa_enabled = False # Needs to be verified first
+        profile.save(update_fields=['totp_secret', 'is_2fa_enabled'])
+        
+        totp = pyotp.TOTP(secret)
+        provisioning_uri = totp.provisioning_uri(name=request.user.email or request.user.username, issuer_name="BurnVault")
+        
+        # Generate QR code
+        qr = qrcode.QRCode(version=1, error_correction=qrcode.constants.ERROR_CORRECT_L, box_size=10, border=4)
+        qr.add_data(provisioning_uri)
+        qr.make(fit=True)
+        
+        img = qr.make_image(fill_color="black", back_color="white")
+        buffered = BytesIO()
+        img.save(buffered, format="PNG")
+        img_str = base64.b64encode(buffered.getvalue()).decode('utf-8')
+        
+        return Response({
+            'secret': secret,
+            'qr_code': f"data:image/png;base64,{img_str}"
+        })
+
+class Verify2FAView(APIView):
+    def post(self, request):
+        code = request.data.get('code')
+        if not code:
+            return Response({"detail": "2FA code is required."}, status=status.HTTP_400_BAD_REQUEST)
+            
+        profile, _ = UserProfile.objects.get_or_create(user=request.user, defaults={'public_key': ''})
+        if not profile.totp_secret:
+            return Response({"detail": "2FA setup not initiated."}, status=status.HTTP_400_BAD_REQUEST)
+            
+        totp = pyotp.TOTP(profile.totp_secret)
+        if totp.verify(code):
+            profile.is_2fa_enabled = True
+            profile.save(update_fields=['is_2fa_enabled'])
+            return Response({"detail": "2FA successfully enabled."})
+        else:
+            return Response({"detail": "Invalid 2FA code."}, status=status.HTTP_400_BAD_REQUEST)
+

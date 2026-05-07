@@ -56,6 +56,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    
+    # Custom Middleware to apply Content-Security-Policy
+    'communication.middleware.SecurityHeadersMiddleware',
 ]
 
 ROOT_URLCONF = 'burnvault_project.urls'
@@ -138,6 +141,17 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     ),
+    
+    # API Rate Limiting (Throttling) configuration to prevent brute force
+
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '10/minute',  # Anonymous users get max 10 requests per minute
+        'user': '100/minute'  # Authenticated users get max 100 requests per minute
+    }
 }
 
 SIMPLE_JWT = {

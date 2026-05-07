@@ -278,6 +278,7 @@ class BurnVaultApp {
     async handleLogin() {
         const username = document.getElementById('login-username').value.trim();
         const password = document.getElementById('login-password').value;
+        const totpCode = document.getElementById('login-2fa').value.trim();
 
         if (!username || !password) {
             this.showNotification('Validation', 'Please enter username and password', 'warning');
@@ -291,7 +292,7 @@ class BurnVaultApp {
             // restore path in loadCurrentUser() can use it.
             this._lastLoginPassword = password;
 
-            const response = await apiClient.login(username, password);
+            const response = await apiClient.login(username, password, totpCode);
             apiClient.setTokens(response.access, response.refresh);
 
             // Primary key-restore path: use /api/profile/me/keys/ which also
@@ -316,6 +317,7 @@ class BurnVaultApp {
             // Clear form
             document.getElementById('login-username').value = '';
             document.getElementById('login-password').value = '';
+            document.getElementById('login-2fa').value = '';
 
             // Load user (also attempts secondary key restore using _lastLoginPassword)
             await this.loadCurrentUser();
@@ -1020,6 +1022,54 @@ class BurnVaultApp {
             .map(b => b.toString(16).padStart(2, '0'))
             .join('');
     }
+
+    /**
+     * Initiate 2FA Setup
+     */
+    async initiate2FASetup() {
+        try {
+            this.setLoadingState(true);
+            const data = await apiClient.setup2FA();
+            
+            document.getElementById('2fa-qr-code').src = data.qr_code;
+            document.getElementById('2fa-secret').textContent = data.secret;
+            
+            document.getElementById('2fa-setup-section').classList.remove('hidden');
+            document.getElementById('setup-2fa-btn').classList.add('hidden');
+            
+            this.showNotification('2FA Setup', 'Scan the QR code with your authenticator app', 'info');
+        } catch (error) {
+            this.showNotification('2FA Setup Failed', error.message, 'error');
+        } finally {
+            this.setLoadingState(false);
+        }
+    }
+
+    /**
+     * Verify and Enable 2FA
+     */
+    async verify2FA() {
+        const code = document.getElementById('2fa-verify-code').value.trim();
+        if (!code) {
+            this.showNotification('Validation', 'Please enter the 6-digit code', 'warning');
+            return;
+        }
+        
+        try {
+            this.setLoadingState(true);
+            await apiClient.verify2FA(code);
+            
+            this.showNotification('Success', 'Two-Factor Authentication is now enabled!', 'success');
+            document.getElementById('2fa-setup-section').classList.add('hidden');
+            document.getElementById('setup-2fa-btn').textContent = '2FA is Enabled';
+            document.getElementById('setup-2fa-btn').disabled = true;
+            document.getElementById('setup-2fa-btn').classList.remove('hidden');
+        } catch (error) {
+            this.showNotification('Verification Failed', error.message, 'error');
+        } finally {
+            this.setLoadingState(false);
+        }
+    }
 }
 
 // Initialize app when DOM is ready
@@ -1035,6 +1085,8 @@ document.addEventListener('DOMContentLoaded', () => {
     window.switchTab = (tabName, evt) => app.switchTab(tabName, evt);
     window.sendMessage = () => app.sendMessage();
     window.clearRecipient = () => app.clearRecipient();
+    window.initiate2FASetup = () => app.initiate2FASetup();
+    window.verify2FA = () => app.verify2FA();
 
     // Search users with debounce
     let searchTimeout;

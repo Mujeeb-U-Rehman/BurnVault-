@@ -15,6 +15,8 @@ from .views import (
     UserProfileDetailView,
     UserSearchView,
     health,
+    Setup2FAView,
+    Verify2FAView,
 )
 
 
@@ -23,6 +25,8 @@ urlpatterns = [
     path('register/', RegisterView.as_view()),
     path('token/', BurnVaultTokenObtainPairView.as_view()),
     path('token/refresh/', TokenRefreshView.as_view()),
+    path('auth/setup-2fa/', Setup2FAView.as_view()),
+    path('auth/verify-2fa/', Verify2FAView.as_view()),
     path('profile/me/', MeProfileView.as_view()),
     path('profile/me/public_key/', MePublicKeyUpdateView.as_view()),
     path('profile/me/keys/', MeKeysView.as_view()),
